@@ -74,6 +74,13 @@ legalMoves (CBoard bl wh) =
       !promote = maskLeft 0x8888888888888888 1 un
    in un - promote + 0x1111111111111111
 
+-- | Fortunately, one player's legal moves are also the other player's.
+legalMovesMO :: Places -> Places -> Places
+legalMovesMO !bl !wh =
+  let !un = bl ||| wh
+      !promote = maskLeft 0x8888888888888888 1 un
+   in un - promote + 0x1111111111111111
+
 -- | Whether the given places has 4 consecutive balls.
 isVictory :: Places -> Bool
 isVictory !pl = (check 0x1111111111111111 1 ||| check 0x000f000f000f000f 4 ||| check 0xffff 16
@@ -85,6 +92,10 @@ isVictory !pl = (check 0x1111111111111111 1 ||| check 0x000f000f000f000f 4 ||| c
   where
     check !mask !shift = (pl &&& pl >>> shift &&& pl >>> (shift * 2) &&& pl >>> (shift * 3)) &&& mask
 
+doMoveC :: CBoard -> Places -> Color -> CBoard
+doMoveC (CBoard !bl !wh) !pl !color =
+  if color == black then CBoard (bl ||| pl) wh
+   else CBoard bl (wh ||| pl)
 countC :: CBoard -> Color -> Int 
 countC (CBoard bl wh) color 
   | color == black = popCount bl
@@ -110,4 +121,12 @@ showCBoard board =
                              putC e) [0..3] ++ "]"
 instance Show CBoard where
   show = showCBoard
+
+showMove :: Places -> String
+showMove mv =
+  let p = popCount (mv - 1)
+      i = (p `div` 4) `mod` 4
+      j = p `div` 16
+      h = p `mod` 4 in
+   (["a", "b", "c", "d"] !! i) ++ show (j + 1) ++ "[" ++ show (h + 1) ++ "]"
 
