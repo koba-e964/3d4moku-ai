@@ -53,7 +53,7 @@ setToDisks !set =
 initCBoard :: CBoard
 initCBoard = CBoard 0 0
 
--- | readCBoard board 2 3 0 returns the bottom of B4.
+-- | For example, 'readCBoard' 'board' 2 3 0 returns the bottom of B4.
 readCBoard :: CBoard -> Int -> Int -> Int -> Color
 readCBoard !board !i !j !h
   | i < 0 || i >= 4 || j < 0 || j >= 4 || h < 0 || h >= 4 = sentinel
@@ -67,7 +67,24 @@ readCBoardUnsafe (CBoard !bl !wh) !i !j !h =
       wbit = wh .&. mask
     in
      if bbit /= 0 then black else if wbit /= 0 then white else none
-  
+-- | Fortunately, one player's legal moves are also the other player's.
+legalMoves :: CBoard -> Places
+legalMoves (CBoard bl wh) =
+  let !un = bl ||| wh
+      !promote = maskLeft 0x8888888888888888 1 un
+   in un - promote + 0x1111111111111111
+
+-- | Whether the given places has 4 consecutive balls.
+isVictory :: Places -> Bool
+isVictory !pl = (check 0x1111111111111111 1 ||| check 0x000f000f000f000f 4 ||| check 0xffff 16
+   ||| check 0x0008000800080008 3 ||| check 0x0001000100010001 5
+   ||| check 0x8888 15 ||| check 0x1111 17
+   ||| check 0xf000 12 ||| check 0x000f 20
+   ||| check 0x8000 11 ||| check 0x1000 13
+   ||| check 0x0008 19 ||| check 0x0001 21) /= 0
+  where
+    check !mask !shift = (pl &&& pl >>> shift &&& pl >>> (shift * 2) &&& pl >>> (shift * 3)) &&& mask
+
 countC :: CBoard -> Color -> Int 
 countC (CBoard bl wh) color 
   | color == black = popCount bl
