@@ -92,6 +92,10 @@ isVictory !pl = (check 0x1111111111111111 1 ||| check 0x000f000f000f000f 4 ||| c
   where
     check !mask !shift = (pl &&& pl >>> shift &&& pl >>> (shift * 2) &&& pl >>> (shift * 3)) &&& mask
 
+gameEnd :: Places -> Places -> Bool
+gameEnd my opp = isVictory my || isVictory opp || (my ||| opp == -1)
+
+
 doMoveC :: CBoard -> Places -> Color -> CBoard
 doMoveC (CBoard !bl !wh) !pl !color =
   if color == black then CBoard (bl ||| pl) wh

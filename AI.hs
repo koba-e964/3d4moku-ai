@@ -55,9 +55,6 @@ minBy comp x y = case comp x y of
 weightPlayPop :: Places -> Int
 weightPlayPop !pl = popCount (pl &&& 0x9009000000009009) * 2 + popCount pl -- corner is 3-point.
 
-gameEnd :: Places -> Places -> Bool
-gameEnd my opp = isVictory my || isVictory opp || (my ||| opp == -1)
-
 -- | timeout : timeout in microseconds (us)
 myPlay :: CBoard -> Color -> Heuristics -> Int -> Bool ->IO Places
 myPlay board color mode time losing = do
